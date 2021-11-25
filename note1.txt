@@ -15,3 +15,43 @@ docker container ls                                                 ... when you
 docker container inspect -f '{{.NetworkSettings.IPAddress}}' nginx1 ... to view IPAddress of container nginx1 (using `-f or --format` flag to filter)
 
 
+// docker network command
+docker network ls
+docker network inspect [network-name]                  ... inspect the docker network 
+docker network connect [OPTIONS] NETWORK CONTAINER     ... attach a network to container
+docker network disconnect [OPTIONS] NETWORK CONTAINER  ... detach a network from container
+
+
+// docker networks: DNS
+// example1) create 2 nginx containers & execute ping command frm nginx1 to nginx2 using custom network (bridge driver, with built-in DNS server)
+// when we create new network "nginxnet" (bridge), it will automatically has DNS server built into it unlike default "bridge" network.
+// default "bridge" network does not have DNS server built in it, which is why without manually connect the containers to our custom network "nginxnet",
+// we could not let containers to communicate with each other (using default "bridge" network, we CANNOT execute `docker container exec nginx1 ping nginx2`. 
+// Therefore, we use "nginxnet" which uses "bridge" driver)
+docker container run -d --name nginx1 nginx
+docker container run -d --name nginx2 nginx
+docker network create --driver bridge nginxnet  ... create new network named "nginxnet" using bridge driver (default is bridge)
+docker network connect nginxnet nginx1          ... container name "nginx1" is also the container DNS now   
+docker network connect nginxnet nginx2          ... container name "nginx2" is also the container DNS now
+
+docker container exec nginx1 ping nginx2 
+docker container exec nginx2 ping nginx1
+// OR 
+docker container exec -it nginx1 ping nginx2    ... since now nginx1 & nginx2 is in same network, they can communicate with each other!
+docker container exec -it nginx2 ping nginx1        ** using default bridge network (no DNS server built-in), this WONT work!
+                                                    ** the work around of this is by using `--link` flag to link nginx1 & nginx2 (see example2 below)
+
+
+// example2) create 2 nginx containers & execute ping command frm nginx1 to nginx2 using default bridge network (NO built-in DNS server)
+// since default bridge network does NOT have DNS server built-in, we need to use `--link` flag to establish connection between containers
+docker container run -d --name nginx3 --link nginx4:nginx4 nginx
+docker container run -d --name nginx4 --link nginx3:nginx3 nginx
+
+docker container exec nginx3 ping nginx4
+docker container exec nginx4 ping nginx3
+// OR
+docker container exec -it nginx3 ping nginx4
+docker container exec -it nginx4 ping nginx3
+
+
+
