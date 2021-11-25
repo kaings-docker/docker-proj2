@@ -123,3 +123,21 @@ docker container run --rm --network searchnet centos curl -s search:9200    ... 
 ```
 
 
+// testing using ubuntu curl
+docker container run -it --network searchnet ubuntu
+> apt-get update & apt-get install -y curl
+> while sleep 1; do curl -s search:9200 | grep name | grep -v cluster; done
+```
+  "name" : "Poison",
+  "name" : "Apollo",
+  "name" : "Apollo",
+  "name" : "Apollo",
+  "name" : "Apollo",
+  "name" : "Apollo",
+  "name" : "Poison",
+  "name" : "Poison",
+  ...
+
+```
+
+
