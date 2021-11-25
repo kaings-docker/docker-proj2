@@ -54,4 +54,72 @@ docker container exec -it nginx3 ping nginx4
 docker container exec -it nginx4 ping nginx3
 
 
+// example3) DNS Round Robin
+// in docker container run command, using flag `--network-alias` it means: 
+// I want another DNS alias to call this container by (besides its container name which is also its DNS)
+// Since we use `--network-alias`, we do NOT need to name the containers, we are just gonna use the network-alias.
+// Every request comes to the defined network-alias will be forwarded to either one of the containers (they all have same network-alias, sanme DNS so to say)
+// which makes DNS round robin possible.
+// in this example, we use `nslookup`. nslookup (name server lookup) is a tool used to perform DNS lookups in Linux
+docker network create searchnet
+docker container run -d --network searchnet --network-alias search elasticsearch:2
+docker container run -d --network searchnet --network-alias search elasticsearch:2  ... we run 2 containers with similar DNS "search"
+
+docker container ls     ... we can see that they have different container name (since we never specify the name), they have same DNS name "search"
+```
+CONTAINER ID   IMAGE             COMMAND                  CREATED             STATUS             PORTS                  NAMES
+fb3647249f5f   elasticsearch:2   "/docker-entrypoint.…"   36 seconds ago      Up 34 seconds      9200/tcp, 9300/tcp     happy_mirzakhani
+bb4faac84bd8   elasticsearch:2   "/docker-entrypoint.…"   41 seconds ago      Up 39 seconds      9200/tcp, 9300/tcp     dreamy_gauss
+```
+
+// testing it by lookup to "search" DNS entry to see which IPs are registered to the DNS
+// testing it from alpine which HAS TO BE FROM SAME NETWORK ("searchnet")
+// the test will give 2 of our container IPs assigned to DNS "search"
+// we can check both our container IPs (`docker container inspect [container-IDs...] -f '{{.NetworkSettings.Networks.searchnet.IPAddress}}'`)
+docker container run --rm --network searchnet alpine nslookup search    ... test using linux alpine
+
+```
+Name:	search
+Address: 172.20.0.3
+Name:	search
+Address: 172.20.0.2
+```
+
+
+// test using centos `curl`. Run it multiple times to get response frm different container
+// this show DNS round robin
+docker container run --rm --network searchnet centos curl -s search:9200    ... both containers run on port 9200 (curl -s... `-s` for silent mode)
+```
+{
+  "name" : "Apollo",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "eIBJKchgTzelPcqR5jwLbg",
+  "version" : {
+    "number" : "2.4.6",
+    "build_hash" : "5376dca9f70f3abef96a77f4bb22720ace8240fd",
+    "build_timestamp" : "2017-07-18T12:17:44Z",
+    "build_snapshot" : false,
+    "lucene_version" : "5.5.4"
+  },
+  "tagline" : "You Know, for Search"
+}
+```
+
+docker container run --rm --network searchnet centos curl -s search:9200    ... both containers run on port 9200 (curl -s... `-s` for silent mode)
+```
+{
+  "name" : "Poison",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "h1y4ZXCUSoeHFhZsD2FTbw",
+  "version" : {
+    "number" : "2.4.6",
+    "build_hash" : "5376dca9f70f3abef96a77f4bb22720ace8240fd",
+    "build_timestamp" : "2017-07-18T12:17:44Z",
+    "build_snapshot" : false,
+    "lucene_version" : "5.5.4"
+  },
+  "tagline" : "You Know, for Search"
+}
+```
+
 
