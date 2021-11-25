@@ -1,0 +1,17 @@
+// docker container command
+docker container run --publish 3000:80 --name webserver --detach nginx
+docker container ls              ...  same as docker ps
+docker container ls -a           ...  same as docker ps -a
+docker container logs webserver  ...  view logs of container. `-f` to follow logs, `-n` to view number of lines frm logs
+docker container top webserver   ...  view running process of the container
+docker container port webserver  ...  to view list of port mappings
+
+docker container top [container-name-or-id]     ... view process list in the container
+docker container inspect [container-name-or-id] ... view details of the container
+docker container stats                          ... view performance stats of ALL containers
+
+docker container exec -it mysql bash                                ... run bash on mysql container
+docker container ls                                                 ... when you exit frm mysql bash, only bash process is terminated, mysql container is still active            
+docker container inspect -f '{{.NetworkSettings.IPAddress}}' nginx1 ... to view IPAddress of container nginx1 (using `-f or --format` flag to filter)
+
+
