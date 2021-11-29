@@ -141,3 +141,8 @@ docker container run -it --network searchnet ubuntu
 ```
 
 
+// inspect docker container vs docker image
+docker container inspect [container-id-or-container-name]
+docker image inspect [docker-image]
+
+
