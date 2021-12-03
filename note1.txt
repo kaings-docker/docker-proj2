@@ -239,3 +239,39 @@ docker-machine                ... create and manage machines running Docker. But
 docker-machine create node1   ... create vm with docker installed called node1 (using virtualbox, etc)
 docker-machine ls             ... list out all docker-machine
 
+
+// demo: docker swarm using remote vm: using digitalocean creating 3 vms
+docker swarm init --advertise-addr <IP-address(public)>   ... use this when we use remote host to run docker swarm. It is because you will be asked to specify ip address to advertise swarm service on.
+                                                              Use public IP address because you wanna use IP that is accessible frm the other servers.
+                                                              Use `docker swarm join --token ... ` to let other node join the swarm.
+
+docker node ls                                            ... to list all the available nodes
+docker node update --role                                 ... to list available role usually 'worker' & 'manager'
+docker node update --role manager node2                   ... to update node2 role to 'manager' role
+docker swarm join-token                                   ... to maange join tokens
+docker swarm join-token manager                           ... to get token for manager role (for node that wanna join as manager node)
+docker swarm join --token <token-value>                   ... to join docker swarm        
+
+
+// now lets create service (alpine) with 3 tasks/containers
+// (on leader node) 
+docker service create --replicas 5 alpine ping 8.8.8.8 
+
+docker service ls
+```
+ID             NAME             MODE         REPLICAS   IMAGE           PORTS
+5wfdnvzywxd0   wonderful_bell   replicated   5/5        alpine:latest   
+```
+
+docker service ps 5wfdnvzywxd0
+```
+ID             NAME               IMAGE           NODE      DESIRED STATE   CURRENT STATE            ERROR     PORTS
+wo3oh554dqh4   wonderful_bell.1   alpine:latest   node1     Running         Running 24 seconds ago             
+nypsifpxpzqs   wonderful_bell.2   alpine:latest   node2     Running         Running 24 seconds ago             
+muogutjxznlj   wonderful_bell.3   alpine:latest   node3     Running         Running 24 seconds ago             
+7qonetqtkjeh   wonderful_bell.4   alpine:latest   node1     Running         Running 24 seconds ago             
+wde1pgdsdk5j   wonderful_bell.5   alpine:latest   node2     Running         Running 24 seconds ago             
+```
+
+
+
