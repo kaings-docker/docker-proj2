@@ -234,5 +234,8 @@ b8b6529f9fc6   alpine:latest   "ping 8.8.8.8"   6 minutes ago    Up 6 minutes   
 // docker service rm [container-name-or-id] ... to remove service (we can docker container rm. But, docker swarm will recreate new one once we remove manually)
 
 
-
+// docker-machine
+docker-machine                ... create and manage machines running Docker. But, not for PROD (ONLY testing). `docker-machine --help` for details
+docker-machine create node1   ... create vm with docker installed called node1 (using virtualbox, etc)
+docker-machine ls             ... list out all docker-machine
 
