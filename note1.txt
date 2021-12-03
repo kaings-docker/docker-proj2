@@ -183,3 +183,56 @@ docker node           ... manage docker swarm nodes. promote, demote nodes, upda
 docker service        ... manage services (group of containers) in nodes (docker service almost similar to docker run). Create services, scale, update, etc. (`docker service --help`)
                           (docker swarm --> docker nodes --> docker services --> docker containers)
 
+// docker service
+docker service create alpine ping 8.8.8.8   ... create docker service (with 1 container pinging 8.8.8.8)
+docker service ls                           ... list out all services
+```
+ID             NAME                MODE         REPLICAS   IMAGE           PORTS
+ih7h2tehneo3   affectionate_boyd   replicated   1/1        alpine:latest 
+```
+
+docker service ps affectionate_boyd         ... list tasks or containers running on specific service (service name or id). This is similar to `docker container ls` as you can see the tasks/containers using the command
+```
+ID             NAME                  IMAGE           NODE             DESIRED STATE   CURRENT STATE           ERROR     PORTS
+jiz0upg8bqo4   affectionate_boyd.1   alpine:latest   docker-desktop   Running         Running 6 minutes ago    
+```
+docker container ls
+```
+CONTAINER ID   IMAGE           COMMAND          CREATED         STATUS         PORTS     NAMES
+734f54344de4   alpine:latest   "ping 8.8.8.8"   9 minutes ago   Up 9 minutes             affectionate_boyd.1.jiz0upg8bqo48jm19ss8g6u4h
+```
+
+docker service update ih7h2tehneo3 --replicas 5   ... update service to increase tasks/containers to 5
+docker service ls
+```
+ID             NAME                MODE         REPLICAS   IMAGE           PORTS
+ih7h2tehneo3   affectionate_boyd   replicated   5/5        alpine:latest   
+```
+
+docker service ps ih7h2tehneo3
+```
+ID             NAME                  IMAGE           NODE             DESIRED STATE   CURRENT STATE                ERROR     PORTS
+jiz0upg8bqo4   affectionate_boyd.1   alpine:latest   docker-desktop   Running         Running 15 minutes ago                 
+g7rljwko7sqk   affectionate_boyd.2   alpine:latest   docker-desktop   Running         Running about a minute ago             
+3wrnwnd566np   affectionate_boyd.3   alpine:latest   docker-desktop   Running         Running about a minute ago             
+c023wsh5wj7j   affectionate_boyd.4   alpine:latest   docker-desktop   Running         Running about a minute ago             
+5oowugmxwf40   affectionate_boyd.5   alpine:latest   docker-desktop   Running         Running about a minute ago             
+```
+
+docker container ls
+```
+CONTAINER ID   IMAGE           COMMAND          CREATED          STATUS          PORTS     NAMES
+3dce317ef276   alpine:latest   "ping 8.8.8.8"   6 minutes ago    Up 6 minutes              affectionate_boyd.3.3wrnwnd566npjbz5yt1p5xc3q
+0e2b7d4c8371   alpine:latest   "ping 8.8.8.8"   6 minutes ago    Up 6 minutes              affectionate_boyd.2.g7rljwko7sqkz97d9lcrttjyj
+e31f98ce132c   alpine:latest   "ping 8.8.8.8"   6 minutes ago    Up 6 minutes              affectionate_boyd.5.5oowugmxwf40b5n4iaina8123
+b8b6529f9fc6   alpine:latest   "ping 8.8.8.8"   6 minutes ago    Up 6 minutes              affectionate_boyd.4.c023wsh5wj7jxpr1cmz5ig9rm
+734f54344de4   alpine:latest   "ping 8.8.8.8"   20 minutes ago   Up 20 minutes             affectionate_boyd.1.jiz0upg8bqo48jm19ss8g6u4h
+```
+
+// docker container update ... to update/config individual container
+// docker service update   ... to update/config individual or multiple containers & in more granular way
+// docker service rm [container-name-or-id] ... to remove service (we can docker container rm. But, docker swarm will recreate new one once we remove manually)
+
+
+
+
