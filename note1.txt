@@ -167,3 +167,19 @@ docker-compose top
 docker-compose ps
 docker-compose logs
 
+
+// docker swarm
+docker info           ... to check if swarm is active and other docker info
+docker swarm init     ... to start docker swarm, leader node will be created
+docker node ls        ... to list out all nodes that we have created
+```
+ID                            HOSTNAME         STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+b98buynnt8wzglm7x82kyz49w *   docker-desktop   Ready     Active         Leader           20.10.8
+```
+
+docker node --help
+docker swarm          ... manage docker swarm. Join swarm, leave, init, etc. (`docker swarm --help`)
+docker node           ... manage docker swarm nodes. promote, demote nodes, update, etc. (`docker node --help`)
+docker service        ... manage services (group of containers) in nodes (docker service almost similar to docker run). Create services, scale, update, etc. (`docker service --help`)
+                          (docker swarm --> docker nodes --> docker services --> docker containers)
+
