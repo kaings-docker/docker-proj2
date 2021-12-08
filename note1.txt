@@ -302,3 +302,39 @@ docker stack services voteapp                                 ... List the servi
 // location of the docker secret 'secret' (both real-docker-swarm & fake-local-docker-compose): /run/secrets/<secret-name>
 
 
+// create 2 secrets using docker secret (docker swarm - not local/docker-compose):
+// 1) create secret from a file with some content (secret name is the name you give when creating the secret, its content will be the value of the secret)
+//    1)-1 create a txt file with content
+           echo "mypsqluser" 1> psql_user.txt
+           ls
+           cat psql_user.txt
+
+//    1)-2 create docker swarm secret using the text file
+//         (create secret with the secret name 'psql_user', the value is the file content which is 'mypsqluser'. 
+//          But, docker swarm encrypted the value. The value only can be seen by the containers that it is assigned to)
+           docker secret create psql_user psql_user.txt
+
+// 2) create secret directly using standard input
+      // the `-` tells the script to read the input from standard input which in this case is 'myDBpassWORD'
+      echo "myDBpassWORD" | docker secret create psql_pass -
+
+
+// both of these secret 'psql_user' & 'psql_pass' are encrypted. Their value/content is ONLY exposed to the container(s)
+// they are assigned to. You can inspect them `docker secret inspect psql_user` & `docker secret inspect psql_pass`.
+// But, you wont be able to see the content.
+
+// Although it is encrypted this way, the above 2 ways of generating secret is NOT RECOMMENDED as they have their drawback in security.
+// method 1) security drawback:
+// since the file used to generate secret is created & stored in the host server, it is NOT SAFE.
+// Recommended way is to create the file locally & pass it to remote host in more secure way (SCP, FTP, etc)
+//
+// method 2) security drawback:
+// we generate secret using bash command standard input `echo`. For those who has the root access of the host,
+// can easily check the bash history to get what we have echoed `history` command.
+
+// to list all the created secrets
+// ps: both secrets are stored at `/run/secrets/psql_user` & `/run/secrets/psql_pass`
+docker secret ls
+
+
+
