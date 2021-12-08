@@ -274,4 +274,23 @@ wde1pgdsdk5j   wonderful_bell.5   alpine:latest   node2     Running         Runn
 ```
 
 
+// docker stack (something like docker compose. But, docker stack is for swarm only while docker compose is for local development which only focus on single container)
+// for the stack yaml file (docker compose yml with additional configuration), refer to:
+// https://github.com/compose-spec/compose-spec/blob/master/spec.md#compose-file
+// & example file: https://github.com/kaings-docker/udemy-docker-mastery/blob/main/swarm-stack-1/example-voting-app-stack.yml
+
+// the difference docker stack vs docker compose:
+// - docker stack is for docker swarm. It does NOT recognize 'build'. It recognize 'deploy' instead.
+//   Because docker stack can be use for PROD. In PROD, we do NOT build, we only perform 'build' for local development 
+//   (logical explanation why docker stack don't recognize 'build')
+// - docker compose is for single container local development only. It recognize 'build' but not 'deploy'.
+//   'deploy' is for docker swarm only (PROD ready environment)
+
+// running docker stack (only works across one swarm) is just very similar to docker compose (`docker stack deploy --help` for details)
+docker stack deploy -c example-voting-app-stack.yml voteapp
+docker stack ls                                               ... to show all stacks
+docker stack ps voteapp                                       ... List the tasks in the stack (our stack name is 'voteapp')
+docker container ls                                           ... just check the running containers in that specific node (see the relationship between the running stack, services, tasks & containers)
+docker stack services voteapp                                 ... List the services in the stack
+
 
