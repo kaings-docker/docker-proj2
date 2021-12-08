@@ -294,3 +294,11 @@ docker container ls                                           ... just check the
 docker stack services voteapp                                 ... List the services in the stack
 
 
+// docker swarm: using secret in docker swarm
+// docker swarm enables 'secret' (encrypted secret storage using ramfs) for storing secret
+// we can use docker swarm yaml that has 'secret' in local docker-compose as well. But, since the real 'secret' (ramfs-based secret) 
+// is only available in docker swarm, in docker-compose local development, 'secret' will be a fake secret (file-based secret) which 
+// is docker compose work around.
+// location of the docker secret 'secret' (both real-docker-swarm & fake-local-docker-compose): /run/secrets/<secret-name>
+
+
