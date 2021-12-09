@@ -372,3 +372,8 @@ docker container logs psql.1.sv3o852vj7cztauvliu9sjat1
 // NOTE: you can also remove the secret. This action is gonna recreate the created container because of 
 //       its immutable nature of secret
 docker service update --secret-rm
+
+
+// in order to use stack in docker compose yaml, the version needs to be at least "3",
+// in order to use stack with secret in docker compose yaml, the version needs to be at least "3.1"
+
