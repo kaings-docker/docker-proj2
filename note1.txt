@@ -377,3 +377,19 @@ docker service update --secret-rm
 // in order to use stack in docker compose yaml, the version needs to be at least "3",
 // in order to use stack with secret in docker compose yaml, the version needs to be at least "3.1"
 
+
+// (1) docker-compose-drupal-assignment1.yml - manually create secret
+// using docker stack to deploy the services, name the stack "drupalapp"
+// since the secrets is indicated as 'external', docker stack WILL NOT auto generate secret for us,
+// we need to generate it manually before running `docker stack deploy`
+echo 'abc12345' | docker secret create psql-pass -
+docker stack deploy -c docker-compose-drupal-assignment-1.yml drupalapp
+docker stack ls
+docker service ls
+```
+ID             NAME                 MODE         REPLICAS   IMAGE           PORTS
+qbz9jsasnnqo   drupalapp_drupal     replicated   1/1        drupal:8.8.2    *:8080->80/tcp
+irqamu0rt3ir   drupalapp_postgres   replicated   1/1        postgres:12.1   
+```
+
+
