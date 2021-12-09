@@ -336,5 +336,39 @@ docker stack services voteapp                                 ... List the servi
 // ps: both secrets are stored at `/run/secrets/psql_user` & `/run/secrets/psql_pass`
 docker secret ls
 
+// create service map generated secrets to the service (so that the secrets will be exposed to containers within the service)
+// & tells the container to use the sectes by passing it to the environment variables
+docker service create --name psql --secret psql_user --secret psql_pass 
+-e POSTGRES_PASSWORD_FILE=/run/secrets/psql_pass
+-e POSTGRES_USER_FILE=/run/secrets/psql_user postgres
 
+// to prove that the secret is mapped correctly (we can confirm that it is in node2)
+docker service ps psql
+```
+ID             NAME      IMAGE             NODE      DESIRED STATE   CURRENT STATE            ERROR     PORTS
+sv3o852vj7cz   psql.1    postgres:latest   node2     Running         Running 19 minutes ago             
+```
 
+// since the task is in node2, ssh into node2 & check the content of /run/secrets/psql_user
+// run `docker container ls` to see the running container (in node2)
+docker container ls               ... run this on node2 because the task is running in node2
+```
+CONTAINER ID   IMAGE             COMMAND                  CREATED       STATUS       PORTS      NAMES
+49940ff4a605   postgres:latest   "docker-entrypoint.s…"   2 hours ago   Up 2 hours   5432/tcp   psql.1.sv3o852vj7cztauvliu9sjat1
+```
+
+// check content of secret /run/secrets/psql_user (run on node2 since container is running in node2)
+docker container exec -it psql.1.sv3o852vj7cztauvliu9sjat1 cat /run/secrets/psql_user
+```
+mypsqluser
+```
+
+// OR, then run command `cat`, `ls /run/secrets/` (run on node2 since container is running in node2)
+docker container exec -it psql.1.sv3o852vj7cztauvliu9sjat1 bash
+
+// OR, to confirm it works, can also check the logs (run on node2 since container is running in node2)
+docker container logs psql.1.sv3o852vj7cztauvliu9sjat1
+
+// NOTE: you can also remove the secret. This action is gonna recreate the created container because of 
+//       its immutable nature of secret
+docker service update --secret-rm
