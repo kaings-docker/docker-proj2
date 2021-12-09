@@ -393,3 +393,15 @@ irqamu0rt3ir   drupalapp_postgres   replicated   1/1        postgres:12.1
 ```
 
 
+// (2) docker-compose-drupal-assignment2.yml - docker stack WILL auto create secrets for us
+// lets create the file use as secret first
+echo 'def67890' > psql-passwd.txt
+docker stack deploy -c docker-compose-drupal-assignment-2.yml drupalapp
+```
+Creating network drupalapp_default
+Creating secret drupalapp_psql-passwd         --> HERE. secret is created for us!!!!!
+Creating service drupalapp_drupal
+Creating service drupalapp_postgres
+```
+
+
