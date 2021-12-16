@@ -1,0 +1,26 @@
+// reference: docker_compose_sample_files
+
+// if "docker-compose.override.yml" exists, when we run `docker-compose up`, it will automatically (by default):
+//  1) run docker-compose up for docker-compose.yml
+//  2) run docker-compose up for docker-compose.override.yml (which automatically override docker-compose.yml)
+docker-compose up -d                            ... it will run docker-compose.yml & override it with docker-compose.override.yml
+
+docker container inspect [drupal-container]     ... we can inspect on the running drupal container and find out that 
+                                                    its volume is mounted as what we have set in "docker-compose.override.yml"
+                                                    & its image is what we have set in "docker-compose.yml". Hence, the override.
+
+
+// other than "docker-compose.override.yml", we need to manually specify the yaml file(s) if we have
+// multiple docker-compose files
+// syntax: docker-compose [base-yaml-file] [extended-yaml-file] [extended-yaml-files ... ]
+docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
+
+docker container inspect [drupal-container]                             ... to double confirm as above
+
+
+// for production docker-compose file, since it is meant to run on production environment, and in prod environment,
+// there is NO docker-compose CLI (docker-compose CLI is ONLY for local development).
+// we basically just run docker config command to "merge" base yaml file(s) with the prod yaml file(s), and then
+// use the merged yaml file in the production environment
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml config
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml config > output_prod.yml
