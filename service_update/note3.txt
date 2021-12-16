@@ -1,0 +1,20 @@
+## Service Updates: Changing Things In Flight
+
+docker service create -p 8088:80 --name web nginx:1.13.7
+
+docker service ls
+
+docker service scale web=5                                      ... increase replicas to 5 on the fly
+
+docker service update --image nginx:1.13.6 web                  ... it does NOT matter if it is older image. The point is "IT HAS TO BE DIFFERENT THAN CURRENT IMAGE"
+
+docker service update --publish-rm 8088 --publish-add 9090:80   ... change publish port (remove the old & add new one at the same time)
+
+docker service update --force web                               ... when we change number of nodes or move things around, we might find out that some nodes are "lighter" or "emptier" than others.
+                                                                    It is because docker swarm does not do auto-rebalancing of the nodes. So it might be some node balance issue
+                                                                    as some nodes will work harder than others.
+                                                                    TIPS: 
+                                                                    since docker swarm do NOT do auto-rebalancing, we can force update of service even nothing to update.
+                                                                    `docker service update --force [service-name]`
+                                                                    This command will force reissue/recreate of the tasks of nodes, which indirectly will auto-balance the tasks to
+                                                                    all of the nodes because docker swarm will reissue/recreate tasks starting frm lighter nodes
