@@ -1,0 +1,70 @@
+// Healthchecks in Dockerfiles
+// few ways we can run docker container Healthchecks
+// 1) from within Dockerfiles, we can use HEALTHCHECK (added in 1.12)
+// 2) we can run it when running container using flag `--health-*` (adding Healthchecks at runtime) 
+
+docker container run --name p1 -e POSTGRES_HOST_AUTH_METHOD=trust -d postgres
+
+docker container ls
+```
+CONTAINER ID   IMAGE      COMMAND                  CREATED         STATUS         PORTS      NAMES
+e9bd28752733   postgres   "docker-entrypoint.s…"   9 seconds ago   Up 8 seconds   5432/tcp   p1
+```
+
+
+// `pg_isready` is postgres built-in tool (to check if the db ready to accept connection)
+docker container run --name p2 -e POSTGRES_HOST_AUTH_METHOD=trust -d --health-cmd="pg_isready -U postgres || exit 1" postgres
+
+docker container ls
+```
+CONTAINER ID   IMAGE      COMMAND                  CREATED              STATUS                            PORTS      NAMES
+22525490f3d5   postgres   "docker-entrypoint.s…"   5 seconds ago        Up 4 seconds (health: starting)   5432/tcp   p2         --> HERE
+e9bd28752733   postgres   "docker-entrypoint.s…"   About a minute ago   Up About a minute                 5432/tcp   p1
+```
+
+docker container inspect p2
+```
+    ...
+
+    "State": {
+                ...
+
+                "Health": {
+                    "Status": "healthy",
+                    "FailingStreak": 0,
+                    "Log": [
+                        {
+                            "Start": "2021-12-17T08:14:43.95108574Z",
+                            "End": "2021-12-17T08:14:44.080674006Z",
+                            "ExitCode": 0,
+                            "Output": "/var/run/postgresql:5432 - accepting connections\n"
+                        }
+                    ]
+                }
+            },
+    ...
+
+```
+
+
+// create postgres service (docker swarm) without healthchecks
+docker service create --name p1 -e POSTGRES_HOST_AUTH_METHOD=trust postgres
+
+
+// create postgres service (docker swarm) with healthchecks
+docker service create --name p2 -e POSTGRES_HOST_AUTH_METHOD=trust --health-cmd="pg_isready -U postgres || exit 1" postgres
+
+
+// `curl -f` command will give result other than '1'(Error) & '0'(OK), the portion '|| false' will
+// help to convert the result that is other than '1' or '0' to '1' or '0'.
+// we can refer to the screenshots: "docker_healthcheck_for_Dockerfile_example_1.png" & 
+// "docker_healthcheck_for_Dockerfile_example_2.png"
+// both '|| false' and '|| exit 1' are the same thing. 
+docker container run \
+    --health-cmd="curl -f localhost:9200/_cluster/health || false" \
+    --health-interval=5s \
+    --health-retries=3 \
+    --health-timeout=2s \
+    --health-start-period=15s \
+    elasticsearch:2
+
