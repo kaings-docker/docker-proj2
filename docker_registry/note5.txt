@@ -1,0 +1,78 @@
+// Demo: Private Docker Registry with Swarm
+// create 5 swarm managers with NO worker
+docker node ls
+```
+ID                            HOSTNAME   STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+w65a62rrnjpyb7frvyvg6j698 *   manager1   Ready     Active         Reachable        20.10.0
+ej2l12c38lbcqjr1c70hgbl0a     manager2   Ready     Active         Reachable        20.10.0
+7tjozx2o18pmj5i32uk30bl2p     manager3   Ready     Active         Leader           20.10.0
+t31brxo3i3uitz4nwluzz2odg     manager4   Ready     Active         Reachable        20.10.0
+bm446qkqh8ns2o4802mzax5bv     manager5   Ready     Active         Reachable        20.10.0
+```
+
+
+// run registry as service on all the nodes with name "registry" (only single service, no replica)
+docker service create --name registry --publish 5000:5000 registry
+
+docker service ps registry
+```
+ID             NAME         IMAGE             NODE       DESIRED STATE   CURRENT STATE            ERROR     PORTS
+jyughsqoleox   registry.1   registry:latest   manager3   Running         Running 37 seconds ago     
+```
+
+
+// open manager3 endpoint on port 5000, we can see blank page. In order to check if the registry is running, 
+// we can visit path '/v2/_catalog', it will return JSON format data specifying repositories /images under the registry
+http://ip172-18-0-29-c74ltd7njsv000929950-5000.direct.labs.play-with-docker.com/v2/_catalog
+```
+// 20211227145045
+// http://ip172-18-0-29-c74ltd7njsv000929950-5000.direct.labs.play-with-docker.com/v2/_catalog
+
+{
+  "repositories": [
+    
+  ]
+}
+```
+
+// since registry is running on manager3, go to manager3 node, pull 'hello-world' image from 
+// docker hub & push it to our private registry private registry runs locally on localhost. Hence, 
+// '127.0.0.1' on port 5000
+docker pull hello-world
+docker tag hello-world 127.0.0.1:5000/hello-world
+docker push 127.0.0.1:5000/hello-world
+
+// if we check the url again, we will see 'hello-world' image is registered in the registry
+// http://ip172-18-0-29-c74ltd7njsv000929950-5000.direct.labs.play-with-docker.com/v2/_catalog
+```
+// 20211227163131
+// http://ip172-18-0-29-c74ltd7njsv000929950-5000.direct.labs.play-with-docker.com/v2/_catalog
+
+{
+  "repositories": [
+    "hello-world"
+  ]
+}
+```
+
+// remove all local image copy of 'hello-world', and then try to pull 'hello-world' image from
+// the private registry '127.0.0.1:5000/hello-world' (still on manager3 node)
+docker rmi hello-world
+docker rmi 127.0.0.1:5000/hello-world
+docker image ls
+```
+REPOSITORY                   TAG       IMAGE ID       CREATED        SIZE
+registry                     <none>    b8604a3fe854   6 weeks ago    26.2MB
+```
+
+docker pull 127.0.0.1:5000/hello-world
+docker image ls
+```
+REPOSITORY                   TAG       IMAGE ID       CREATED        SIZE
+registry                     <none>    b8604a3fe854   6 weeks ago    26.2MB
+127.0.0.1:5000/hello-world   latest    feb5d9fea6a5   3 months ago   13.3kB
+```
+
+// to run registry with bind volume so that when we push to registry, we can see the image lives in
+// the binded path we specified
+docker container run --name registy -d -p 5000:5000 -v $(pwd)/registry-data:/var/lib/registry registry
